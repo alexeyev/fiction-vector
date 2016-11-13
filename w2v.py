@@ -15,7 +15,7 @@ mystem = Mystem()
 # iter = 15
 
 
-def train_model(text_file_path, size=300, window=10, min_count=3, sg=0, iter=150):
+def train_model(text_file_path, size=30, window=7, min_count=3, sg=0, iter=15):
     """
         Training models with caching
     """
@@ -64,15 +64,16 @@ if __name__ == "__main__":
     model_demurova = ("Demurova", train_model("alisa.txt"))
 
     all_models = [model_nabokov, model_demurova]
-    words_list = ["привет", "кот", "шляпа", "гусеница"]
+    words_list = list(model_nabokov[1].vocab.keys() | model_demurova[1].vocab.keys())
+    print("Len of vocab", len(words_list))
 
     for checked_word in words_list:
         for name, model in all_models:
             print(name, ":", checked_word, ":", end=" ")
             try:
-                for word, distance in model.most_similar([checked_word]):
+                for word, distance in model.most_similar([checked_word], topn=5):
                     print(word, end="\t")  # "\t", distance)
             except KeyError as ke:
-                print("Error", ke)
+                print("Error", ke, end=" ")
             print()
         print()
