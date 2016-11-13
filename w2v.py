@@ -1,6 +1,7 @@
 from gensim.models.word2vec import Word2Vec
 from nltk.tokenize import sent_tokenize
 from pymystem3.mystem import Mystem
+import ordered_labels_metrics
 
 DATA_PATH = "data/"
 MODEL_PATH = "models/"
@@ -15,7 +16,7 @@ mystem = Mystem()
 # iter = 15
 
 
-def train_model(text_file_path, size=30, window=7, min_count=3, sg=0, iter=15):
+def train_model(text_file_path, size=30, window=3, min_count=2, sg=0, iter=15):
     """
         Training models with caching
     """
@@ -28,7 +29,7 @@ def train_model(text_file_path, size=30, window=7, min_count=3, sg=0, iter=15):
                       ".bin"
 
     try:
-        model = Word2Vec.load(MODEL_PATH + text_file_path)
+        model = Word2Vec.load(model_file_path)
     except Exception as exc:
 
         print("Model not cached, retraining.", exc)
@@ -68,12 +69,23 @@ if __name__ == "__main__":
     print("Len of vocab", len(words_list))
 
     for checked_word in words_list:
+        wordlists = []
         for name, model in all_models:
             print(name, ":", checked_word, ":", end=" ")
             try:
-                for word, distance in model.most_similar([checked_word], topn=5):
+                similar = model.most_similar([checked_word], topn=5)
+                for word, distance in similar:
                     print(word, end="\t")  # "\t", distance)
+                wordlists.append([x for x, y in similar])
             except KeyError as ke:
                 print("Error", ke, end=" ")
             print()
+
+        try:
+            print(wordlists)
+            print(ordered_labels_metrics.exp_orderings(wordlists[0], wordlists[1]))
+            print(ordered_labels_metrics.exp_orderings(wordlists[1], wordlists[0]))
+        except:
+            pass
+
         print()
